@@ -1,0 +1,43 @@
+---
+- hosts: all
+  become: true
+  pre_tasks:
+
+  - name: install ntp, mssql
+    apt:
+      name:
+        - ntp
+        - mysql-server
+
+- hosts: all
+  become: true
+  tasks:
+
+  - name: update repository index
+    apt:
+      update_cache: yes
+    when: ansible_distribution == "Ubuntu"
+
+  - name: editting the chrony.conf file
+    copy:
+      dest: /etc/chrony/chrony.conf
+      content:
+        server 192.168.56.105
+        allow 10.0.0.0/24
+      mode: 0755
+
+  - name: install openstack package
+    command: snap install --edge microstack --classic
+
+  - name: install etcd
+    apt:
+      name:
+        - etcd
+      state: latest
+
+  - name: install message queue and memcached
+    apt:
+      name:
+        - rabbitmq-server
+        - memcached
+      state: latest
